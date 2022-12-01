@@ -71,7 +71,7 @@ recipesRoutes.put('/update/:field/:value', async (req, res) => {
     }
 })
 
-recipesRoutes.delete('/delete/:field/:value', async (req, res) => {
+recipesRoutes.delete('/deletebyfield/:field/:value', async (req, res) => {
     // Veja explicação acima para a rota /update
     // ex.: /recipe/delete/title/Carrot+Cake
     const { field, value } = req.params;
@@ -79,11 +79,42 @@ recipesRoutes.delete('/delete/:field/:value', async (req, res) => {
     filter[field] = value.replaceAll('+', ' ');
     try {
         const delRecipe = await RecipeModel.deleteOne(filter);
+        await UserModel.findByIdAndUpdate(
+            delRecipe.user,
+            {
+              $pull: {
+                recipes: recipeId,
+              },
+            },
+            { runValidators: true }
+        );
+
         return res.status(200).json(delRecipe);
     } catch (e) {
         console.log(e);
         return res.status(500).json("Não foi possível apagar a receita.");
     }
 })
+
+recipesRoutes.delete('/delete/:recipeId', async (req, res) => {
+    const { recipeId } = req.params;
+
+    try {
+        const delRecipe = await RecipeModel.findByIdAndDelete(recipeId);
+        await UserModel.findByIdAndUpdate(
+            delRecipe.user,
+            {
+              $pull: {
+                recipes: recipeId,
+              },
+            },
+            { runValidators: true }
+        );
+        return res.status(204).json();        
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json("Erro ao apagar a receita.");
+    }
+});
 
 export default recipesRoutes;

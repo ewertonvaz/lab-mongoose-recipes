@@ -6,7 +6,7 @@ const userSchema = new Schema ( {
     age: { type: Number },
     email: { type: String, required: true, unique: true},
     isChef: { type: Boolean, default: false},
-    recipes: [ { type: Schema.Types.ObjectId, ref: "User"}  ]
+    recipes: [ { type: Schema.Types.ObjectId, ref: "Recipe"}  ]
     },
     { timestamps : true}
 );

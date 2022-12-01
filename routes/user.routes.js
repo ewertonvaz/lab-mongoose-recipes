@@ -1,4 +1,5 @@
 import express from "express"
+import RecipeModel from "../models/Recipe.model.js";
 import UserModel from "../models/user.model.js";
 
 const userRoutes = express.Router();
@@ -44,7 +45,8 @@ userRoutes.put("/update/:userId", async (req, res) => {
 userRoutes.delete("/delete/:userId", async (req, res) => {
     try {
         const { userId } = req.params;
-        const deltedUser = await UserModel.deleteOne({ _id: userId });
+        await UserModel.findByIdAndDelete(userId);
+        await RecipeModel.deleteMany({user: userId});
         return res.status(204).json();
     } catch (e) {
         console.log(e);
