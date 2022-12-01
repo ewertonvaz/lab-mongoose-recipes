@@ -1,5 +1,6 @@
 import express from "express"
 import RecipeModel from "../models/Recipe.model.js";
+import UserModel from "../models/user.model.js";
 import recipesFromJson from "../data.json" assert {type: 'json'} ;
 
 const recipesRoutes = express.Router();
@@ -14,11 +15,19 @@ recipesRoutes.get('/all', async (req, res) => {
     }
 })
 
-recipesRoutes.post('/create', async (req, res) => {
+recipesRoutes.post('/create/:userId', async (req, res) => {
     try {
+        const { userId } = req.params;
         // const receita = { ...req.body, created: new Date(req.body.created)};
-        const receita = { ...req.body };
+        const receita = { ...req.body, user: userId };
         const newReceita = await RecipeModel.create(receita);
+
+        await UserModel.findByIdAndUpdate(
+            userId,
+            { $push: { recipes: newReceita._id }},
+            {runValidators: true}
+        );
+
         return res.status(201).json(newReceita);  
     } catch (e) {
         console.log(e);
